@@ -1,0 +1,41 @@
+<!-- register.html -->
+{% extends "base.html" %}
+
+{% block title %}Kayıt Ol{% endblock %}
+
+{% block content %}
+    <h2 class="card-title text-center mb-4">Kayıt Ol</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="isim" class="form-label">İsim:</label>
+            <input type="text" class="form-control" id="isim" name="isim" required>
+        </div>
+        <div class="mb-3">
+            <label for="yas" class="form-label">Yaş:</label>
+            <input type="number" class="form-control" id="yas" name="yas" min="1" max="120" required>
+        </div>
+        <div class="mb-3">
+            <label for="sifre" class="form-label">Şifre:</label>
+            <input type="password" class="form-control" id="sifre" name="sifre" required>
+        </div>
+
+        <!-- Güvenlik Sorusu ve Cevabı -->
+        <div class="mb-3">
+            <label for="guvenliksorusu" class="form-label">Güvenlik Sorusu:</label>
+            <select class="form-select" id="guvenliksorusu" name="guvenliksorusu" required>
+                <option value="">Bir soru seçin...</option>
+                <option value="İlk evcil hayvanınızın adı nedir?">İlk evcil hayvanınızın adı nedir?</option>
+                <option value="En sevdiğiniz şehir hangisidir?">En sevdiğiniz şehir hangisidir?</option>
+                <option value="Anne kızlık soyadınız nedir?">Anne kızlık soyadınız nedir?</option>
+                <option value="İlk okul öğretmeninizin adı nedir?">İlk okul öğretmeninizin adı nedir?</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="guvenlikcevap" class="form-label">Güvenlik Cevabı:</label>
+            <input type="text" class="form-control" id="guvenlikcevap" name="guvenlikcevap" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Kayıt Ol</button>
+    </form>
+    <p class="mt-3 text-center">Zaten hesabın var mı? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
+{% endblock %}

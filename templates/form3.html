@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Kullanıcılar{% endblock %}
+
+{% block content %}
+    <h2 class="card-title text-center mb-4">Kullanıcı Listesi</h2>
+    <div class="list-group">
+        {% for user in users %}
+            <li class="list-group-item">{{ user.isim }} - {{ user.yas }} yaşında</li>
+        {% endfor %}
+    </div>
+    <hr>
+    <div class="text-center">
+        <p><a href="{{ url_for('logout') }}">Çıkış Yap</a></p>
+    </div>
+{% endblock %}

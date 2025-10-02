@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Profilim{% endblock %}
+
+{% block content %}
+    <h2 class="card-title text-center mb-4">Profil Sayfası</h2>
+    <p><strong>Kullanıcı Adı:</strong> {{ current_user.isim }}</p>
+    <p><strong>Yaş:</strong> {{ current_user.yas }}</p>
+    
+    <hr>
+
+    <h3 class="mt-4">Bilgileri Güncelle</h3>
+    <form method="POST" action="{{ url_for('profilguncelleme') }}">
+        <div class="mb-3">
+            <label for="isim" class="form-label">Yeni İsim:</label>
+            <input type="text" class="form-control" id="isim" name="isim" value="{{ current_user.isim }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="yas" class="form-label">Yeni Yaş:</label>
+            <input type="number" class="form-control" id="yas" name="yas" value="{{ current_user.yas }}" min="1" max="120" required>
+        </div>
+        <button type="submit" class="btn btn-success">Bilgileri Güncelle</button>
+    </form>
+    
+    <hr>
+
+    <h3 class="mt-4">Şifre Güncelle</h3>
+    <form method="POST" action="{{ url_for('sifredegistir') }}">
+        <div class="mb-3">
+            <label for="eskisifre" class="form-label">Eski Şifre:</label>
+            <input type="password" class="form-control" id="eskisifre" name="eskisifre" required>
+        </div>
+        <div class="mb-3">
+            <label for="yenisifre" class="form-label">Yeni Şifre:</label>
+            <input type="password" class="form-control" id="yenisifre" name="yenisifre" required>
+        </div>
+        <button type="submit" class="btn btn-warning text-white">Şifreyi Güncelle</button>
+    </form>
+
+    <!-- Güvenlik Sorusu ve Cevabı Güncelle -->
+<hr>
+<h3 class="mt-4">Güvenlik Sorusu ve Cevabı Güncelle</h3>
+<form method="POST" action="{{ url_for('guvenlikguncelle') }}">
+    <div class="mb-3">
+        <label class="form-label">Mevcut Güvenlik Sorunuz:</label>
+        <input type="text" class="form-control" value="{{ current_user.guvenliksorusu }}" disabled>
+    </div>
+    <div class="mb-3">
+        <label for="yeniguvenliksorusu" class="form-label">Yeni Güvenlik Sorusu:</label>
+        <select class="form-select" id="yeniguvenliksorusu" name="yeniguvenliksorusu" required>
+            <option value="">Bir soru seçin...</option>
+            <option value="İlk evcil hayvanınızın adı nedir?">İlk evcil hayvanınızın adı nedir?</option>
+            <option value="En sevdiğiniz şehir hangisidir?">En sevdiğiniz şehir hangisidir?</option>
+            <option value="Anne kızlık soyadınız nedir?">Anne kızlık soyadınız nedir?</option>
+            <option value="İlk okul öğretmeninizin adı nedir?">İlk okul öğretmeninizin adı nedir?</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="yeniguvenlikcevap" class="form-label">Yeni Güvenlik Cevabı:</label>
+        <input type="text" class="form-control" id="yeniguvenlikcevap" name="yeniguvenlikcevap" required>
+    </div>
+    <button type="submit" class="btn btn-info text-white">Güncelle</button>
+</form>
+
+    <hr>
+    <div class="d-grid gap-2 mt-4">
+        <form action="{{ url_for('delete_own_account') }}" method="POST" onsubmit="return confirm('Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')">
+            <button type="submit" class="btn btn-danger w-100">Hesabımı Sil</button>
+        </form>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Çıkış Yap</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş Yap{% endblock %}
+
+{% block content %}
+    <h2 class="card-title text-center mb-4">Giriş Yap</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="isim" class="form-label">İsim:</label>
+            <input type="text" class="form-control" id="isim" name="isim" required>
+        </div>
+        <div class="mb-3">
+            <label for="sifre" class="form-label">Şifre:</label>
+            <input type="password" class="form-control" id="sifre" name="sifre" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+    </form>
+    <hr>
+    <div class="text-center">
+        <a href="{{ url_for('forgot_password') }}">Şifremi Unuttum?</a>
+        <p class="mt-2">Hesabın yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a></p>
+    </div>
+{% endblock %}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kullanıcı Formu</title>
+
+    <style>
+        .flash-message {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 1s ease; /* animasyon */
+        }
+        .flash-message.success {
+            color: green;
+        }
+        .flash-message.error {
+            color: red;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash mesajları -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul id="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-message {{ category }}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    
+    <script>
+        // 5 saniye sonra flash mesajlarını fade-out ile kaybolsun
+        setTimeout(function() {
+            let flashBox = document.getElementById("flash-messages");
+            if (flashBox) {
+                flashBox.classList.add("fade-out");
+                setTimeout(() => flashBox.style.display = "none", 1000);
+            }
+        }, 5000);
+    </script>
+
+    <!-- Formlar -->
+   <form method="get" action="{{ url_for('get_users') }}">
+    <input type="text" name="search" placeholder="İsim ara" value="{{ search }}">
+    
+    <select name="sort">
+        <option value="id" {% if sort == "id" %}selected{% endif %}>ID</option>
+        <option value="isim" {% if sort == "isim" %}selected{% endif %}>İsim</option>
+        <option value="yas" {% if sort == "yas" %}selected{% endif %}>Yaş</option>
+    </select>
+    
+    <button type="submit">Ara / Sırala</button>
+    <!-- Sıfırla butonu -->
+    <a href="{{ url_for('get_users') }}">
+        <button type="button">Sıfırla</button>
+    </a>
+</form>
+
+
+    <h1>Kullanıcı Ekle</h1>
+    <form action="/add-user" method="POST">
+        <label>İsim:</label>
+        <input type="text" name="isim" required><br><br>
+        <label>Yaş:</label>
+        <input type="number" name="yas" required><br><br>
+        <button type="submit">Ekle</button>
+    </form>
+
+    <h2>Kullanıcı Sil</h2>
+    <form action="/delete-user" method="POST">
+        <label>ID:</label>
+        <input type="number" name="id" required>
+        <button type="submit">Sil</button>
+    </form>
+    
+    <h2>Kullanıcı Güncelle</h2>
+    <form action="/update-user" method="POST">
+        <label>ID:</label>
+        <input type="number" name="id" required><br><br>
+        <label>İsim:</label>
+        <input type="text" name="isim" required><br><br>
+        <label>Yaş:</label>
+        <input type="number" name="yas" required><br><br>
+        <button type="submit">Güncelle</button>
+    </form>
+
+    <h2>Mevcut Kullanıcılar</h2>
+    <ul>
+        {% for user in users %}
+            <li>ID: {{ user.id }} - {{ user.isim }} ({{ user.yas }} yaşında)</li>
+        {% else %}
+            <li>Henüz kullanıcı yok.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+

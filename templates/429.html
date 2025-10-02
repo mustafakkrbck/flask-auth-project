@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Çok Fazla Deneme{% endblock %}
+
+{% block content %}
+    <h2 class="text-danger text-center">Çok Fazla Giriş Denemesi</h2>
+    <p class="text-center">Çok fazla hatalı giriş yaptınız. Lütfen birkaç dakika bekleyip tekrar deneyin.</p>
+    <div class="text-center">
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Giriş Sayfasına Dön</a>
+    </div>
+{% endblock %}
