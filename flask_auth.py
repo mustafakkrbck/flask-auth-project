@@ -8,6 +8,7 @@ from functools import wraps
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime
+
 # Brute-force koruması (basit, bellek içi)
 basarisizgiris = {}
 maxgiris=3
@@ -39,18 +40,126 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f"<User {self.isim}>"
 
+class BlogPost(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    baslik=db.Column(db.String(50),unique=True,nullable=False)
+    icerik=db.Column(db.Text,nullable=False)
+    tarih=db.Column(db.DateTime,nullable=False,default=datetime.utcnow)
+    kullanici_id=db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
+    yazar=db.relationship('User',backref=db.backref('posts',lazy=True))
+    
+@app.route("/blog")
+def blog():
+    """Tüm Blog Gönderilerini Listele"""
+    posts=BlogPost.query.order_by(BlogPost.tarih.desc()).all()
+    return render_template("blog.html",posts=posts)
+
+@app.route("/karar")
+@login_required
+def kararsayfasi():
+    """Kullanıcının giriş sonrası nereye gideceğini seçeceği sayfa"""
+    return render_template("karar.html")
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
 with app.app_context():
     db.create_all()
-
+    
 @app.route("/")
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for("kararsayfasi"))
+    return redirect(url_for("login"))
+
+@app.route("/user_list")
 @login_required
 def get_users():
     users = User.query.all()
     return render_template("form3.html", users=users)
+
+## Yeni Blog Gönderisi Oluşturma Rotası
+@app.route("/yeni_gonderi", methods=["GET", "POST"])
+@login_required
+def yeni_gonderi():
+    if request.method == "POST":
+        baslik = request.form.get("baslik").strip()
+        icerik = request.form.get("icerik")
+
+        if not baslik or not icerik:
+            flash("Başlık ve içerik alanları boş bırakılamaz.", "error")
+            return redirect(url_for("yeni_gonderi"))
+        
+        # Başlığın benzersizliğini kontrol et (BlogPost modelinde unique=True)
+        if BlogPost.query.filter_by(baslik=baslik).first():
+             flash("Bu başlıkta bir gönderi zaten mevcut. Lütfen farklı bir başlık seçin.", "error")
+             return render_template("gonderi_formu.html")
+             
+        yeni_post = BlogPost(baslik=baslik, icerik=icerik, kullanici_id=current_user.id)
+        db.session.add(yeni_post)
+        db.session.commit()
+        flash("Blog gönderisi başarıyla oluşturuldu!", "success")
+        return redirect(url_for("blog"))
+
+    # Yeni gönderi formu (gonderi_formu.html) render edilir.
+    return render_template("gonderi_formu.html")
+
+## Gönderiyi Görüntüleme Rotası
+@app.route("/gonderi/<int:post_id>")
+def gonderi(post_id):
+    post = BlogPost.query.get_or_404(post_id)
+    # gonderi.html şablonu post değişkenini bekliyor
+    return render_template("gonderi.html", post=post)
+
+## Gönderiyi Düzenleme Rotası
+@app.route("/duzenle_gonderi/<int:post_id>", methods=["GET", "POST"])
+@login_required
+def duzenle_gonderi(post_id):
+    post = BlogPost.query.get_or_404(post_id)
+
+    # Yetkilendirme Kontrolü (Sadece gönderi sahibi veya admin düzenleyebilir)
+    if post.kullanici_id != current_user.id and current_user.rol != "admin":
+        flash("Bu gönderiyi düzenleme yetkiniz yok.", "error")
+        return redirect(url_for("gonderi", post_id=post.id))
+
+    if request.method == "POST":
+        yeni_baslik = request.form.get("baslik").strip()
+        yeni_icerik = request.form.get("icerik")
+        
+        if not yeni_baslik or not yeni_icerik:
+            flash("Başlık ve içerik alanları boş bırakılamaz.", "error")
+            return redirect(url_for("duzenle_gonderi", post_id=post.id))
+
+        # Başlık değiştirilmişse ve yeni başlık zaten varsa kontrol et
+        if yeni_baslik != post.baslik and BlogPost.query.filter_by(baslik=yeni_baslik).first():
+            flash("Bu başlıkta başka bir gönderi zaten mevcut.", "error")
+            return render_template("gonderi_formu.html", post=post)
+
+        post.baslik = yeni_baslik
+        post.icerik = yeni_icerik
+        db.session.commit()
+        flash("Gönderi başarıyla güncellendi.", "success")
+        return redirect(url_for("gonderi", post_id=post.id))
+
+    # Düzenleme formu (gonderi_formu.html) render edilir.
+    return render_template("gonderi_formu.html", post=post)
+
+## Gönderiyi Silme Rotası
+@app.route("/sil_gonderi/<int:post_id>", methods=["POST"])
+@login_required
+def sil_gonderi(post_id):
+    post = BlogPost.query.get_or_404(post_id)
+
+    # Yetkilendirme Kontrolü (Sadece gönderi sahibi veya admin silebilir)
+    if post.kullanici_id != current_user.id and current_user.rol != "admin":
+        flash("Bu gönderiyi silme yetkiniz yok.", "error")
+        return redirect(url_for("gonderi", post_id=post.id))
+
+    db.session.delete(post)
+    db.session.commit()
+    flash("Gönderi başarıyla silindi.", "success")
+    return redirect(url_for("blog"))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -102,6 +211,9 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 @limiter.limit("3 per minute", key_func=lambda: request.form.get("isim", "anonim"))
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("kararsayfasi"))
+        
     if request.method == "POST":
         isim = request.form.get("isim").strip()
         sifre = request.form.get("sifre")
@@ -116,10 +228,9 @@ def login():
 
         login_user(user)
         flash(f"Giriş başarılı! Hoş geldin {user.isim}", "success")
-        if user.rol == "admin":
-            return redirect(url_for("adminpanel"))
-        else:
-            return redirect(url_for("profile"))
+        # DÜZELTME: Karar sayfasına yönlendirme yapıldığı için altındaki eski mantık kaldırıldı.
+        return redirect(url_for("kararsayfasi")) 
+        
     return render_template("login.html")
 
 @app.route("/logout")
@@ -209,6 +320,8 @@ def delete_user(user_id):
     if user.rol == "admin":
         flash("Admin kullanıcı silinemez!", "error")
     else:
+        # Silinecek kullanıcının tüm blog gönderilerini de sil
+        BlogPost.query.filter_by(kullanici_id=user.id).delete()
         db.session.delete(user)
         db.session.commit()
         flash("Kullanıcı başarıyla silindi.", "success")
@@ -221,6 +334,10 @@ def delete_own_account():
     if user.rol == "admin":
         flash("Admin kendi hesabını silemez!", "error")
         return redirect(url_for("profile"))
+    
+    # Kullanıcının tüm blog gönderilerini sil
+    BlogPost.query.filter_by(kullanici_id=user.id).delete()
+    db.session.commit()
     
     logout_user()
     db.session.delete(user)
@@ -270,6 +387,7 @@ def reset_password(user_id):
         flash("Şifre başarıyla sıfırlandı. Yeni şifrenizle giriş yapabilirsiniz.", "success")
         return redirect(url_for("login"))
     return render_template("reset_password.html", user=user)
+    
 @app.route("/change/<int:user_id>", methods=["POST"])
 @login_required
 @adminrequired
@@ -298,6 +416,7 @@ def changerole(user_id):
 
     db.session.commit()
     return redirect(url_for("adminpanel"))
+    
 @app.route("/guvenlikguncelle",methods=["POST"])
 @login_required
 def guvenlikguncelle():
@@ -313,10 +432,12 @@ def guvenlikguncelle():
     current_user.guvenliksorusu=yenisoru
     current_user.guvenlikcevap=hashedcevap
     db.session.commit()
-    flash("Güvenlik sorusu  ve cevabı gğncellendi.","success")
+    flash("Güvenlik sorusu ve cevabı güncellendi.","success")
     return redirect(url_for("profile"))
+    
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return render_template("429.html"),429
+    
 if __name__ == "__main__":
     app.run(debug=True)

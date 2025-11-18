@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Nereye Gitmek İstersiniz?{% endblock %}
+
+{% block content %}
+    <h2 class="card-title text-center mb-4">Giriş Başarılı! 👋</h2>
+    <p class="text-center lead">Hoş geldiniz, **{{ current_user.isim }}**! Şimdi nereye gitmek istersiniz?</p>
+    
+    <div class="row mt-5">
+        
+        <div class="col-md-6 mb-3">
+            <a href="{{ url_for('blog') }}" class="btn btn-primary btn-lg w-100 py-3 shadow">
+                📚 Blog Sayfasına Git
+            </a>
+            <small class="d-block text-center mt-2 text-muted">En son içerikleri okuyun veya yeni bir gönderi yayınlayın.</small>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <a href="{{ url_for('profile') }}" class="btn btn-success btn-lg w-100 py-3 shadow">
+                👤 Profilimi Güncelle
+            </a>
+            <small class="d-block text-center mt-2 text-muted">Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin.</small>
+        </div>
+
+    </div>
+
+    {% if current_user.rol == 'admin' %}
+    <div class="text-center mt-4">
+        <hr>
+        <a href="{{ url_for('adminpanel') }}" class="btn btn-warning btn-sm">⭐ Admin Paneli</a>
+    </div>
+    {% endif %}
+
+{% endblock %}

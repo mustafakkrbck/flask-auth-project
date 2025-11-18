@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Blog{% endblock %}
+
+{% block content %}
+    <h1 class="card-title text-center mb-4">Blog Gönderileri</h1>
+    
+    {% if current_user.is_authenticated %}
+        <div class="mb-4 text-end">
+            <a href="{{ url_for('yeni_gonderi') }}" class="btn btn-success">Yeni Gönderi Ekle</a>
+        </div>
+    {% endif %}
+
+    {% for post in posts %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title">{{ post.baslik }}</h3>
+                <p class="card-text">
+                    {{ post.icerik[:200] }}... <a href="{{ url_for('gonderi', post_id=post.id) }}">Devamını Oku</a>
+                </p>
+                <footer class="blockquote-footer mt-2">
+                    Yazan: <cite title="Yazar">{{ post.yazar.isim }}</cite> | 
+                    Tarih: {{ post.tarih.strftime('%d-%m-%Y') }}
+                </footer>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-center text-muted">Henüz hiç blog gönderisi yok.</p>
+    {% endfor %}
+{% endblock %}

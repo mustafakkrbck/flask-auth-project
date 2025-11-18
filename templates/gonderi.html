@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.baslik }}{% endblock %}
+
+{% block content %}
+    <h1 class="card-title mb-3">{{ post.baslik }}</h1>
+    
+    <div class="alert alert-info py-2">
+        Yazar: <strong>{{ post.yazar.isim }}</strong> | 
+        Tarih: <strong>{{ post.tarih.strftime('%d-%m-%Y %H:%M') }}</strong>
+    </div>
+
+    <div class="mb-4">
+        <p>{{ post.icerik }}</p>
+    </div>
+
+    <hr>
+    
+    {% if current_user.is_authenticated and (current_user.id == post.kullanici_id or current_user.rol == 'admin') %}
+        <div class="mt-4 d-flex justify-content-start">
+            <a href="{{ url_for('duzenle_gonderi', post_id=post.id) }}" class="btn btn-warning me-2">Düzenle</a>
+            
+            <form method="POST" action="{{ url_for('sil_gonderi', post_id=post.id) }}" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz?')" class="d-inline">
+                <button type="submit" class="btn btn-danger">Sil</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('blog') }}" class="btn btn-secondary">← Blog Ana Sayfasına Dön</a>
+    </div>
+{% endblock %}
