@@ -79,7 +79,7 @@ def get_users():
     users = User.query.all()
     return render_template("form3.html", users=users)
 
-## Yeni Blog Gönderisi Oluşturma Rotası
+#Yeni Blog Gönderisi Oluşturma Rotası
 @app.route("/yeni_gonderi", methods=["GET", "POST"])
 @login_required
 def yeni_gonderi():
@@ -105,14 +105,14 @@ def yeni_gonderi():
     # Yeni gönderi formu (gonderi_formu.html) render edilir.
     return render_template("gonderi_formu.html")
 
-## Gönderiyi Görüntüleme Rotası
+#Gönderiyi Görüntüleme Rotası
 @app.route("/gonderi/<int:post_id>")
 def gonderi(post_id):
     post = BlogPost.query.get_or_404(post_id)
     # gonderi.html şablonu post değişkenini bekliyor
     return render_template("gonderi.html", post=post)
 
-## Gönderiyi Düzenleme Rotası
+#Gönderiyi Düzenleme Rotası
 @app.route("/duzenle_gonderi/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def duzenle_gonderi(post_id):
@@ -145,7 +145,7 @@ def duzenle_gonderi(post_id):
     # Düzenleme formu (gonderi_formu.html) render edilir.
     return render_template("gonderi_formu.html", post=post)
 
-## Gönderiyi Silme Rotası
+#Gönderiyi Silme Rotası
 @app.route("/sil_gonderi/<int:post_id>", methods=["POST"])
 @login_required
 def sil_gonderi(post_id):
