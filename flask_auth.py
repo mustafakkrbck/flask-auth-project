@@ -228,7 +228,6 @@ def login():
 
         login_user(user)
         flash(f"Giriş başarılı! Hoş geldin {user.isim}", "success")
-        # DÜZELTME: Karar sayfasına yönlendirme yapıldığı için altındaki eski mantık kaldırıldı.
         return redirect(url_for("kararsayfasi")) 
         
     return render_template("login.html")
@@ -367,7 +366,7 @@ def forgot_password():
                 flash("Güvenlik cevabı yanlış.", "error")
                 return render_template("forgot_password.html", security_question=user.guvenliksorusu, isim=isim)
         else:
-            # Sadece kullanıcı adı girildi → soruyu göster
+            # Sadece kullanıcı adı girildiyse soruyu göster
             security_question = user.guvenliksorusu
 
     return render_template("forgot_password.html", security_question=security_question, isim=isim)
@@ -399,7 +398,7 @@ def changerole(user_id):
         flash("Kendi rolünüzü değiştiremezsiniz.", "error")
         return redirect(url_for("adminpanel"))
 
-    # Son admin kontrolü (isteğe bağlı)
+    # Son admin kontrolü
     if user.rol == "admin":
         toplam_admin = User.query.filter_by(rol="admin").count()
         if toplam_admin <= 1:
